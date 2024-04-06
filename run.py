@@ -437,3 +437,11 @@ if __name__ == "__main__":
 
         agent = construct_agent(args)
         test(args, agent, test_file_list)
+
+
+# python run.py \
+#   --instruction_path agent/prompts/jsons/p_cot_id_actree_2s.json \
+#   --test_start_idx 0 \
+#   --test_end_idx 10 \
+#   --model gpt-3.5-turbo \
+#   --result_dir ./results/

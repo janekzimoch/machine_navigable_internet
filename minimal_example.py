@@ -8,25 +8,26 @@ import subprocess
 import time
 
 SLEEP = 1.5
+ROOT_URL = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com" #"http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com"
 # set the URLs of each website, we use the demo sites as an example
 os.environ[
     "SHOPPING"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:7770"
+] = f"{ROOT_URL}:7770"
 os.environ[
     "SHOPPING_ADMIN"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:7780/admin"
+] = f"{ROOT_URL}:7780/admin"
 os.environ[
     "REDDIT"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:9999"
+] = f"{ROOT_URL}:9999"
 os.environ[
     "GITLAB"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:8023"
+] = f"{ROOT_URL}:8023"
 os.environ[
     "MAP"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000"
+] = f"{ROOT_URL}:3000"
 os.environ[
     "WIKIPEDIA"
-] = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:8888/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
+] = f"{ROOT_URL}:8888/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
 os.environ[
     "HOMEPAGE"
 ] = "PASS"  # The home page is not currently hosted in the demo site
@@ -149,4 +150,5 @@ score = evaluator(
 )
 
 # as we manually perform the task, the task should be judged as correct
+print('score: ', score)
 assert score == 1.0
