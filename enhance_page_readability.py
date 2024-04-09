@@ -19,6 +19,8 @@ from agent.agent import construct_agent
 from browser_env.trajectory import Trajectory
 from browser_env.utils import StateInfo
 from browser_env.auto_login import get_site_comb_from_filepath
+from website_parsing.parse_page import parse_accessibility_tree
+from website_parsing.enter_page import enter_page
 
 
 def modify_current_page(page):
@@ -129,28 +131,38 @@ if __name__ == "__main__":
 
 
     obs, info = env.reset(options={"config_file": config_file})
-    print("obs: ", obs)
-    # print("info: ", info)
+    # print("obs: ", obs)
 
-    state_info: StateInfo = {"observation": obs, "info": info}
-    trajectory: Trajectory = []
-    trajectory.append(state_info)
-    meta_data = {"action_history": ["None"]}
-    try:
-        action = agent.next_action(
-            trajectory, intent, meta_data=meta_data
-        )
-    except ValueError as e:
-        print(f"ERROR: {str(e)}")
+    components = parse_accessibility_tree(obs['text'])
+    def get_comp_id():
+        for comp in components:
+            if 'SALES' in comp['label']:
+                return comp['id']
+    id = get_comp_id()
+    print('id: ', id, '  type: ', type(id))
+    enter_page(env, str(id))
 
-    print("\n\naction: ", action)
+    # # print("info: ", info)
 
-    obs, _, terminated, _, info = env.step(action)
+    # state_info: StateInfo = {"observation": obs, "info": info}
+    # trajectory: Trajectory = []
+    # trajectory.append(state_info)
+    # meta_data = {"action_history": ["None"]}
+    # try:
+    #     action = agent.next_action(
+    #         trajectory, intent, meta_data=meta_data
+    #     )
+    # except ValueError as e:
+    #     print(f"ERROR: {str(e)}")
 
-    print('\n\nNew Observation: ', obs)
-    # to execute a click we need to do env.step(action)
-    # which calls execute_action() and then execute_mouse_click()
-    # then we simply call get observation to get a new page
+    # print("\n\naction: ", action)
+
+    # obs, _, terminated, _, info = env.step(action)
+
+    # print('\n\nNew Observation: ', obs)
+    # # to execute a click we need to do env.step(action)
+    # # which calls execute_action() and then execute_mouse_click()
+    # # then we simply call get observation to get a new page
 
 
 

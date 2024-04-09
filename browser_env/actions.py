@@ -1099,7 +1099,7 @@ def execute_action(
     action: Action,
     page: Page,
     browser_ctx: BrowserContext,
-    obseration_processor: ObservationProcessor,
+    observation_processor: ObservationProcessor,
 ) -> Page:
     """Execute the action on the ChromeDriver."""
     action_type = action["action_type"]
@@ -1126,7 +1126,7 @@ def execute_action(
             # TODO[shuyanzh]: order is temp now
             if action["element_id"]:
                 element_id = action["element_id"]
-                element_center = obseration_processor.get_element_center(element_id)  # type: ignore[attr-defined]
+                element_center = observation_processor.get_element_center(element_id)  # type: ignore[attr-defined]
                 execute_mouse_click(element_center[0], element_center[1], page)
             elif action["element_role"] and action["element_name"]:
                 element_role = int(action["element_role"])
@@ -1144,7 +1144,7 @@ def execute_action(
         case ActionTypes.HOVER:
             if action["element_id"]:
                 element_id = action["element_id"]
-                element_center = obseration_processor.get_element_center(element_id)  # type: ignore[attr-defined]
+                element_center = observation_processor.get_element_center(element_id)  # type: ignore[attr-defined]
                 execute_mouse_hover(element_center[0], element_center[1], page)
             elif action["element_role"] and action["element_name"]:
                 element_role = int(action["element_role"])
@@ -1163,7 +1163,7 @@ def execute_action(
         case ActionTypes.TYPE:
             if action["element_id"]:
                 element_id = action["element_id"]
-                element_center = obseration_processor.get_element_center(element_id)  # type: ignore[attr-defined]
+                element_center = observation_processor.get_element_center(element_id)  # type: ignore[attr-defined]
                 execute_mouse_click(element_center[0], element_center[1], page)
                 execute_type(action["text"], page)
             elif action["element_role"] and action["element_name"]:
