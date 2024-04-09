@@ -122,6 +122,7 @@ class PromptAgent(Agent):
         prompt = self.prompt_constructor.construct(
             trajectory, intent, meta_data
         )
+        print('\n\nprompt: ', prompt)
         lm_config = self.lm_config
         n = 0
         while True:
@@ -130,11 +131,14 @@ class PromptAgent(Agent):
                 "meta_data"
             ].get("force_prefix", "")
             response = f"{force_prefix}{response}"
+            print("\n\nresponse: ", response)
             n += 1
             try:
                 parsed_response = self.prompt_constructor.extract_action(
                     response
                 )
+                print("\n\parsed_response: ", parsed_response)
+
                 if self.action_set_tag == "id_accessibility_tree":
                     action = create_id_based_action(parsed_response)
                 elif self.action_set_tag == "playwright":
@@ -143,9 +147,13 @@ class PromptAgent(Agent):
                     raise ValueError(
                         f"Unknown action type {self.action_set_tag}"
                     )
+
+                print("\n\naction: ", action)
+
                 action["raw_prediction"] = response
                 break
             except ActionParsingError as e:
+                print('Failed retriving an action')
                 if n >= lm_config.gen_config["max_retry"]:
                     action = create_none_action()
                     action["raw_prediction"] = response
