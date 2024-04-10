@@ -12,6 +12,7 @@ import os
 import subprocess
 import tempfile
 from types import SimpleNamespace
+import copy
 
 
 from browser_env.envs import ScriptBrowserEnv
@@ -19,8 +20,9 @@ from agent.agent import construct_agent
 from browser_env.trajectory import Trajectory
 from browser_env.utils import StateInfo
 from browser_env.auto_login import get_site_comb_from_filepath
-from website_parsing.parse_page import parse_accessibility_tree
-from website_parsing.enter_page import enter_page
+import website_parsing.parse_page as parse_page
+import website_parsing.enter_page as enter_page
+import website_parsing.openai_api as openai_api
 
 
 def modify_current_page(page):
@@ -131,19 +133,26 @@ if __name__ == "__main__":
 
 
     obs, info = env.reset(options={"config_file": config_file})
-    # print("obs: ", obs)
+    prev_page_obs = env.observation_handler.text_processor.process(env.page, env.page.client)
+    page_with_description = copy.copy(prev_page_obs)
+    print(page_with_description)
 
-    components = parse_accessibility_tree(obs['text'])
-    def get_comp_id():
-        for comp in components:
-            if 'SALES' in comp['label']:
-                return comp['id']
-    id = get_comp_id()
-    print('id: ', id, '  type: ', type(id))
-    enter_page(env, str(id))
 
-    # # print("info: ", info)
+    components = parse_page.parse_accessibility_tree(obs['text'])
+    for comp in components:
+        if comp['type'] in ['link', 'button']:
+            id = comp['id']
+            print('id: ', id, '  type: ', type(id))
+            prev_page_obs = env.observation_handler.text_processor.process(env.page, env.page.client)
+            print(prev_page_obs)
+            new_page_obs = enter_page.enter_page(env, str(id))
+            description = openai_api.get_changes_descritpion(comp['label'], prev_page_obs, new_page_obs)
+            print(f'ID: {id}, Description: {description}')
+            search_term = f"[{id}] {comp['type']} '{comp['label']}'"
+            prefix, sufix = page_with_description.split(search_term)
+            page_with_description = prefix + search_term + "  button description: '{description}'" + sufix
 
+    print('page_with_description: ', page_with_description)
     # state_info: StateInfo = {"observation": obs, "info": info}
     # trajectory: Trajectory = []
     # trajectory.append(state_info)
