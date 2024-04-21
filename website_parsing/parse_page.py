@@ -1,4 +1,51 @@
 import re
+from dataclasses import dataclass
+
+@dataclass
+class Component:
+    id: str
+    tag: str
+    attrs: dict
+    description: str = ""
+
+
+def parse_html_line(line: str) -> Component:
+    ' splits a string of an html into Component object '
+    pattern = re.compile(r'\[(\d+)\]\s*<(\w+)(.*?)>')
+    
+    match = pattern.search(line)
+    if not match: 
+        return None
+
+    id = match.group(1)
+    tag = match.group(2)
+    attrs_str = match.group(3).strip()
+
+    attrs_pattern = re.compile(r'(\w+)="([^"]*)"')
+    attrs = dict(attrs_pattern.findall(attrs_str))
+
+    return Component(id=id, tag=tag, attrs=attrs)
+
+
+def is_clickable(component: Component) -> bool:
+    if component is None:
+        return None
+    if component.tag in ['A', 'BUTTON'] or 'onclick' in component.attrs:
+        return True
+    else:
+        return False
+
+
+def parse_html(html: str) -> list[Component]:
+    ' extract clickable components from an html '
+    lines = html.split('\n')
+    clickable_components = []
+    for line in lines:
+        comp = parse_html_line(line)
+        if is_clickable(comp):
+            clickable_components.append(comp)
+    return clickable_components
+
 
 def parse_accessibility_tree(tree):
     # Split the input string into lines

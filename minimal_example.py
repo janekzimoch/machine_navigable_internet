@@ -8,7 +8,7 @@ import subprocess
 import time
 
 SLEEP = 1.5
-ROOT_URL = "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com" #"http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com"
+ROOT_URL = "http://ec2-3-22-150-63.us-east-2.compute.amazonaws.com" #"http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com"
 # set the URLs of each website, we use the demo sites as an example
 os.environ[
     "SHOPPING"

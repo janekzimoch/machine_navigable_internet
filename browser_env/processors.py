@@ -253,6 +253,9 @@ class TextObervationProcessor(ObservationProcessor):
 
             dom_tree.append(cur_node)
 
+        print(len(dom_tree))
+        print([node["nodeId"] for node in dom_tree[:10]], '\n\n')
+
         # add parent children index to the node
         for parent_id, child_ids in graph.items():
             dom_tree[int(parent_id)]["childIds"] = child_ids
@@ -369,7 +372,8 @@ class TextObervationProcessor(ObservationProcessor):
         accessibility_tree: AccessibilityTree = client.send(
             "Accessibility.getFullAXTree", {}
         )["nodes"]
-
+        
+        # print(accessibility_tree)
         # a few nodes are repeated in the accessibility tree
         seen_ids = set()
         _accessibility_tree = []
@@ -378,7 +382,8 @@ class TextObervationProcessor(ObservationProcessor):
                 _accessibility_tree.append(node)
                 seen_ids.add(node["nodeId"])
         accessibility_tree = _accessibility_tree
-
+        print(len(accessibility_tree))
+        print([node["nodeId"] for node in accessibility_tree[:10]], '\n\n')
         nodeid_to_cursor = {}
         for cursor, node in enumerate(accessibility_tree):
             nodeid_to_cursor[node["nodeId"]] = cursor
@@ -476,6 +481,7 @@ class TextObervationProcessor(ObservationProcessor):
     ) -> tuple[str, dict[str, Any]]:
         """Parse the accessibility tree into a string text"""
         node_id_to_idx = {}
+
         for idx, node in enumerate(accessibility_tree):
             node_id_to_idx[node["nodeId"]] = idx
 

@@ -25,6 +25,9 @@ import website_parsing.enter_page as enter_page
 import website_parsing.openai_api as openai_api
 
 
+print(os.getenv('SHOPPING_ADMIN'))
+
+
 def modify_current_page(page):
     ''' itterate through all clickable components and for each, idenitfy it's purpose.
     then enhance current page with those descriptions '''
@@ -54,12 +57,29 @@ def _enhance_comp_description(component, child_description):
     enhanced_page = None
     return enhanced_page
 
+def explore_object(obj):
+    print("Type of object:", type(obj))
+
+    if isinstance(obj, dict):
+        print("Object is a dictionary with keys:", obj.keys())
+    elif isinstance(obj, (list, tuple, set)):
+        print(f"Object is a {type(obj).__name__} with length {len(obj)}")
+    else:
+        print("Attributes and methods of the object:")
+        attributes = dir(obj)
+        for attr in attributes:
+            attr_value = getattr(obj, attr)
+            if callable(attr_value):
+                print(f"{attr}() - Callable")
+            else:
+                print(f"{attr} - Non-callable")
+
 if __name__ == "__main__":
     args_defaults = {
         "render": False,
         "slow_mo": 0,
         "action_set_tag": "id_accessibility_tree",
-        "observation_type": "accessibility_tree",
+        "observation_type": "html", #"accessibility_tree", #"html", #
         "current_viewport_only": True,
         "viewport_width": 1280,
         "viewport_height": 720,
@@ -133,45 +153,43 @@ if __name__ == "__main__":
 
 
     obs, info = env.reset(options={"config_file": config_file})
-    prev_page_obs = env.observation_handler.text_processor.process(env.page, env.page.client)
-    page_with_description = copy.copy(prev_page_obs)
-    print(page_with_description)
+    clickable_components = parse_page.parse_html(obs['text'])
 
+    # for each clickable component generate a descrition
+    for i, comp in enumerate(clickable_components[:2]):
+        prev_page_obs = env.observation_handler.text_processor.process(env.page, env.page.client)
+        new_page_obs = enter_page.enter_page(env, comp.id)
+        obs, info = env.reset(options={"config_file": config_file})
 
-    components = parse_page.parse_accessibility_tree(obs['text'])
-    for comp in components:
-        if comp['type'] in ['link', 'button']:
-            id = comp['id']
-            print('id: ', id, '  type: ', type(id))
-            prev_page_obs = env.observation_handler.text_processor.process(env.page, env.page.client)
-            print(prev_page_obs)
-            new_page_obs = enter_page.enter_page(env, str(id))
-            description = openai_api.get_changes_descritpion(comp['label'], prev_page_obs, new_page_obs)
-            print(f'ID: {id}, Description: {description}')
-            search_term = f"[{id}] {comp['type']} '{comp['label']}'"
-            prefix, sufix = page_with_description.split(search_term)
-            page_with_description = prefix + search_term + "  button description: '{description}'" + sufix
+        description = openai_api.get_changes_description(comp, prev_page_obs, new_page_obs)
+        clickable_components[i].description = description
 
+    # enhance page with descriptions
+    for i, comp in enumerate(clickable_components[:2]):
+        # TODO: slice the orginal html and anhance it with descirptions of clickable components
+        continue
+    
+    # TODO: ensure this is all correct
     print('page_with_description: ', page_with_description)
-    # state_info: StateInfo = {"observation": obs, "info": info}
-    # trajectory: Trajectory = []
-    # trajectory.append(state_info)
-    # meta_data = {"action_history": ["None"]}
-    # try:
-    #     action = agent.next_action(
-    #         trajectory, intent, meta_data=meta_data
-    #     )
-    # except ValueError as e:
-    #     print(f"ERROR: {str(e)}")
+    state_info: StateInfo = {"observation": obs, "info": info}
+    trajectory: Trajectory = []
+    trajectory.append(state_info)
+    meta_data = {"action_history": ["None"]}
+    try:
+        action = agent.next_action(
+            trajectory, intent, meta_data=meta_data
+        )
+    except ValueError as e:
+        print(f"ERROR: {str(e)}")
 
-    # print("\n\naction: ", action)
+    print("\n\naction: ", action)
 
-    # obs, _, terminated, _, info = env.step(action)
+    obs, _, terminated, _, info = env.step(action)
 
-    # print('\n\nNew Observation: ', obs)
-    # # to execute a click we need to do env.step(action)
-    # # which calls execute_action() and then execute_mouse_click()
-    # # then we simply call get observation to get a new page
+    print('\n\nNew Observation: ', obs)
+    # to execute a click we need to do env.step(action)
+    # which calls execute_action() and then execute_mouse_click()
+    # then we simply call get observation to get a new page
 
 
 
